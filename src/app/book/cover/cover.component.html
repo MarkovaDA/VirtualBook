@@ -17,8 +17,22 @@
           <div class="page__sheet">
             <div class="page__content">
               @if (baseLeft; as page) {
-                <p class="page__title">{{ page.title }}</p>
-                <p>{{ page.text }}</p>
+                @if (hideBaseLeftText) {
+                  <p class="page__title page__title--pending" aria-hidden="true">{{ page.title }}</p>
+                  <p class="page__body page__body--pending" aria-hidden="true">{{ page.text }}</p>
+                } @else if (flipping) {
+                  <p class="page__title">{{ page.title }}</p>
+                  <p class="page__body">{{ page.text }}</p>
+                } @else {
+                  <p class="page__title page__title--animate" [attr.aria-label]="page.title">
+                    @for (ch of titleChars(page.title); track titleAnimKey + '-' + $index; let i = $index) {
+                      <span class="page__title-char" [style.--i]="i" aria-hidden="true">{{
+                        ch === ' ' ? '\u00A0' : ch
+                      }}</span>
+                    }
+                  </p>
+                  <p class="page__body">{{ page.text }}</p>
+                }
               }
             </div>
           </div>
@@ -43,8 +57,22 @@
           <div class="page__sheet">
             <div class="page__content">
               @if (baseRight; as page) {
-                <p class="page__title">{{ page.title }}</p>
-                <p>{{ page.text }}</p>
+                @if (hideBaseRightText) {
+                  <p class="page__title page__title--pending" aria-hidden="true">{{ page.title }}</p>
+                  <p class="page__body page__body--pending" aria-hidden="true">{{ page.text }}</p>
+                } @else if (flipping) {
+                  <p class="page__title">{{ page.title }}</p>
+                  <p class="page__body">{{ page.text }}</p>
+                } @else {
+                  <p class="page__title page__title--animate" [attr.aria-label]="page.title">
+                    @for (ch of titleChars(page.title); track titleAnimKey + '-' + $index; let i = $index) {
+                      <span class="page__title-char" [style.--i]="i" aria-hidden="true">{{
+                        ch === ' ' ? '\u00A0' : ch
+                      }}</span>
+                    }
+                  </p>
+                  <p class="page__body">{{ page.text }}</p>
+                }
               }
             </div>
           </div>
@@ -69,6 +97,7 @@
             [class.leaf--forward]="flipDirection === 'forward'"
             [class.leaf--back]="flipDirection === 'back'"
             [class.leaf--turned]="leafTurned"
+            [class.leaf--settling]="leafSettling"
             (transitionend)="onLeafTransitionEnd($event)"
           >
             <div class="leaf__face leaf__face--front">
@@ -76,7 +105,7 @@
                 <div class="page__content">
                   @if (leafFront; as page) {
                     <p class="page__title">{{ page.title }}</p>
-                    <p>{{ page.text }}</p>
+                    <p class="page__body">{{ page.text }}</p>
                   }
                 </div>
               </div>
@@ -85,8 +114,8 @@
               <div class="page__sheet">
                 <div class="page__content">
                   @if (leafBack; as page) {
-                    <p class="page__title">{{ page.title }}</p>
-                    <p>{{ page.text }}</p>
+                    <p class="page__title page__title--pending" aria-hidden="true">{{ page.title }}</p>
+                    <p class="page__body page__body--pending" aria-hidden="true">{{ page.text }}</p>
                   }
                 </div>
               </div>

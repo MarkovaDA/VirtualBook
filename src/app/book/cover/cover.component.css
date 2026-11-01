@@ -13,7 +13,9 @@
   --desk-deep: #1c2422;
   --desk-mid: #2f3d38;
   --desk-light: #4a5c52;
-  --flip-ms: 900ms;
+  --flip-ms: 1480ms;
+  --flip-ease: cubic-bezier(0.28, 0.02, 0.12, 1);
+  --settle-ms: 60ms;
 }
 
 .stage {
@@ -35,7 +37,7 @@
   width: auto;
   max-width: min(1200px, 100vw);
   aspect-ratio: 16 / 10;
-  animation: book-settle 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: book-settle 1400ms cubic-bezier(0.33, 0.08, 0.2, 1) both;
 }
 
 .book__shadow {
@@ -171,22 +173,61 @@
   height: 100%;
   overflow: auto;
   color: #2a2018;
-  font-family: "Literata", "Palatino Linotype", Palatino, serif;
-  font-size: clamp(0.85rem, 1.35vw, 1rem);
-  line-height: 1.55;
+  font-family: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+  font-size: clamp(1.2rem, 1.9vw, 1.45rem);
+  font-weight: 500;
+  line-height: 1.45;
   pointer-events: none;
 }
 
 .page__title {
-  margin: 0 0 0.75rem;
-  font-family: "Cormorant Garamond", "Times New Roman", serif;
-  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
-  font-weight: 600;
+  margin: 0 0 0.85rem;
+  font-family: "Great Vibes", "Segoe Script", "Apple Chancery", cursive;
+  font-size: clamp(2.1rem, 3.8vw, 2.85rem);
+  font-weight: 400;
   letter-spacing: 0.02em;
+  line-height: 1.2;
   color: #2a2018;
 }
 
-.page__content p {
+.page__title-char {
+  display: inline-block;
+}
+
+.page__title--pending,
+.page__body--pending {
+  opacity: 0;
+}
+
+.page__title--animate .page__title-char {
+  opacity: 0;
+  animation: title-char-in 420ms ease both;
+  animation-delay: calc(var(--i, 0) * 42ms + 80ms);
+}
+
+@keyframes title-char-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page__title--animate .page__title-char {
+    animation: none;
+    opacity: 1;
+  }
+
+  .page__title--pending,
+  .page__body--pending {
+    opacity: 1;
+  }
+}
+
+.page__content p,
+.page__body {
   margin: 0 0 0.85rem;
   color: #3d3228;
 }
@@ -288,7 +329,7 @@
   animation: none;
   clip-path: polygon(100% 0, 100% 100%, 0 100%);
   box-shadow: -8px -8px 18px rgba(40, 24, 12, 0.2);
-  transition: clip-path 380ms cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 380ms ease;
+  transition: clip-path 520ms var(--flip-ease), box-shadow 520ms ease;
 }
 
 .page-curl--prev:hover .page-curl__flap,
@@ -297,7 +338,7 @@
   animation: none;
   clip-path: polygon(0 0, 100% 100%, 0 100%);
   box-shadow: 8px -8px 18px rgba(40, 24, 12, 0.2);
-  transition: clip-path 380ms cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 380ms ease;
+  transition: clip-path 520ms var(--flip-ease), box-shadow 520ms ease;
 }
 
 .page-curl:focus-visible {
@@ -336,9 +377,14 @@
   width: calc((100% - 14px) / 2);
   z-index: 6;
   transform-style: preserve-3d;
-  transition: transform var(--flip-ms) cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: transform;
+  transition:
+    transform var(--flip-ms) var(--flip-ease),
+    filter var(--flip-ms) cubic-bezier(0.4, 0.0, 0.2, 1),
+    opacity var(--settle-ms) ease-out;
+  will-change: transform, opacity;
   pointer-events: none;
+  opacity: 1;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.06));
 }
 
 .leaf--forward {
@@ -349,6 +395,7 @@
 
 .leaf--forward.leaf--turned {
   transform: rotateY(-180deg);
+  filter: drop-shadow(-3px 5px 12px rgba(0, 0, 0, 0.1));
 }
 
 .leaf--back {
@@ -359,6 +406,15 @@
 
 .leaf--back.leaf--turned {
   transform: rotateY(180deg);
+  filter: drop-shadow(3px 5px 12px rgba(0, 0, 0, 0.1));
+}
+
+.leaf--settling {
+  opacity: 0;
+  filter: drop-shadow(0 0 0 transparent);
+  transition:
+    opacity var(--settle-ms) ease-out,
+    filter var(--settle-ms) ease-out;
 }
 
 .leaf__face {
@@ -370,8 +426,9 @@
   background:
     linear-gradient(180deg, #f7f1e7 0%, var(--page) 40%, var(--page-edge) 100%);
   box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.22),
-    inset 0 0 0 1px rgba(80, 55, 35, 0.08);
+    0 6px 16px rgba(0, 0, 0, 0.12),
+    inset 0 0 0 1px rgba(80, 55, 35, 0.06);
+  transition: box-shadow var(--flip-ms) cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .leaf__face--front {
@@ -401,7 +458,15 @@
 
 .leaf--forward.leaf--turned .leaf__face--front,
 .leaf--back.leaf--turned .leaf__face--front {
-  box-shadow: inset -18px 0 28px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.04),
+    inset -10px 0 18px rgba(0, 0, 0, 0.08);
+}
+
+.leaf--settling .leaf__face {
+  box-shadow:
+    0 0 0 transparent,
+    inset 0 0 0 1px rgba(80, 55, 35, 0.04);
 }
 
 .hint {
@@ -416,7 +481,7 @@
 @keyframes book-settle {
   from {
     opacity: 0;
-    transform: translateY(28px) scale(0.96);
+    transform: translateY(14px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -539,6 +604,7 @@
 
   .leaf--forward.leaf--turned {
     transform: rotateX(-180deg);
+    filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.1));
   }
 
   .leaf--back {
@@ -550,6 +616,7 @@
 
   .leaf--back.leaf--turned {
     transform: rotateX(180deg);
+    filter: drop-shadow(0 -5px 12px rgba(0, 0, 0, 0.1));
   }
 
   .leaf__face--back {

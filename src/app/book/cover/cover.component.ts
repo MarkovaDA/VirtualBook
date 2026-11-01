@@ -20,9 +20,15 @@ export class CoverComponent {
   flipping = false;
   flipDirection: FlipDirection | null = null;
   leafTurned = false;
+  leafSettling = false;
+  /** Bumps when a flip finishes so title letter animations remount. */
+  titleAnimKey = 0;
 
   private pointerStartX: number | null = null;
   private pointerStartY: number | null = null;
+  private settleTimer: ReturnType<typeof setTimeout> | null = null;
+  private frozenLeafFront: BookPage | null = null;
+  private frozenLeafBack: BookPage | null = null;
 
   get spreadCount(): number {
     return Math.max(1, Math.ceil(this.pages.length / 2));
@@ -62,7 +68,7 @@ export class CoverComponent {
 
   /** Base left page while animating */
   get baseLeft(): BookPage | null {
-    if (this.flipping && this.flipDirection === 'back') {
+    if (this.flipping && !this.leafSettling && this.flipDirection === 'back') {
       return this.prevLeftPage;
     }
     return this.leftPage;
@@ -70,18 +76,39 @@ export class CoverComponent {
 
   /** Base right page while animating */
   get baseRight(): BookPage | null {
-    if (this.flipping && this.flipDirection === 'forward') {
+    if (this.flipping && !this.leafSettling && this.flipDirection === 'forward') {
       return this.nextRightPage;
     }
     return this.rightPage;
   }
 
   get leafFront(): BookPage | null {
+    if (this.leafSettling) {
+      return this.frozenLeafFront;
+    }
     return this.flipDirection === 'back' ? this.leftPage : this.rightPage;
   }
 
   get leafBack(): BookPage | null {
+    if (this.leafSettling) {
+      return this.frozenLeafBack;
+    }
     return this.flipDirection === 'back' ? this.prevRightPage : this.nextLeftPage;
+  }
+
+  /** Hide text on the page being revealed until the flip finishes. */
+  get hideBaseLeftText(): boolean {
+    if (!this.flipping) {
+      return false;
+    }
+    return this.leafSettling || this.flipDirection === 'back';
+  }
+
+  get hideBaseRightText(): boolean {
+    if (!this.flipping) {
+      return false;
+    }
+    return this.leafSettling || this.flipDirection === 'forward';
   }
 
   onPointerDown(event: PointerEvent): void {
@@ -134,12 +161,18 @@ export class CoverComponent {
   }
 
   onLeafTransitionEnd(event: TransitionEvent): void {
-    if (!this.flipping || event.propertyName !== 'transform') {
+    if (!this.flipping || this.leafSettling) {
       return;
     }
     if (event.target !== event.currentTarget) {
       return;
     }
+    if (event.propertyName !== 'transform') {
+      return;
+    }
+
+    this.frozenLeafFront = this.leafFront;
+    this.frozenLeafBack = this.leafBack;
 
     if (this.flipDirection === 'forward') {
       this.spreadIndex += 1;
@@ -147,9 +180,22 @@ export class CoverComponent {
       this.spreadIndex -= 1;
     }
 
-    this.flipping = false;
-    this.flipDirection = null;
-    this.leafTurned = false;
+    this.leafSettling = true;
+
+    if (this.settleTimer !== null) {
+      clearTimeout(this.settleTimer);
+    }
+
+    this.settleTimer = setTimeout(() => {
+      this.flipping = false;
+      this.flipDirection = null;
+      this.leafTurned = false;
+      this.leafSettling = false;
+      this.frozenLeafFront = null;
+      this.frozenLeafBack = null;
+      this.settleTimer = null;
+      this.titleAnimKey += 1;
+    }, 60);
   }
 
   flipForward(): void {
@@ -167,15 +213,27 @@ export class CoverComponent {
   }
 
   private startFlip(direction: FlipDirection): void {
+    if (this.settleTimer !== null) {
+      clearTimeout(this.settleTimer);
+      this.settleTimer = null;
+    }
+
     this.flipping = true;
     this.flipDirection = direction;
     this.leafTurned = false;
+    this.leafSettling = false;
+    this.frozenLeafFront = null;
+    this.frozenLeafBack = null;
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         this.leafTurned = true;
       });
     });
+  }
+
+  titleChars(title: string): string[] {
+    return Array.from(title);
   }
 
   private pageAt(index: number): BookPage | null {
