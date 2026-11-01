@@ -1,0 +1,558 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  --leather: #2b1c16;
+  --leather-edge: #4a3228;
+  --leather-highlight: #5c4034;
+  --page: #f2ebe0;
+  --page-edge: #e4d8c6;
+  --ink-faint: rgba(42, 32, 24, 0.18);
+  --gutter: #1a110e;
+  --desk-deep: #1c2422;
+  --desk-mid: #2f3d38;
+  --desk-light: #4a5c52;
+  --flip-ms: 900ms;
+}
+
+.stage {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.85rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 42%, rgba(90, 110, 98, 0.35), transparent 70%),
+    linear-gradient(160deg, var(--desk-mid) 0%, var(--desk-deep) 55%, #121816 100%);
+  overflow: hidden;
+}
+
+.book {
+  position: relative;
+  height: min(100% - 2.5rem, 100%);
+  width: auto;
+  max-width: min(1200px, 100vw);
+  aspect-ratio: 16 / 10;
+  animation: book-settle 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.book__shadow {
+  position: absolute;
+  inset: 12% 4% -4%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), transparent 68%);
+  filter: blur(18px);
+  z-index: 0;
+  animation: shadow-breathe 5s ease-in-out infinite;
+}
+
+.book__cover {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px 10px 10px 4px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(18, 10, 6, 0.45) 0%,
+      rgba(18, 10, 6, 0.1) 16%,
+      transparent 40%,
+      transparent 60%,
+      rgba(18, 10, 6, 0.1) 84%,
+      rgba(18, 10, 6, 0.4) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 214, 160, 0.12) 0%,
+      transparent 18%,
+      transparent 82%,
+      rgba(0, 0, 0, 0.32) 100%
+    ),
+    url("/textures/ornate-leather-cover.jpg") center / cover no-repeat;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 180, 0.16),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.42),
+    0 18px 40px rgba(0, 0, 0, 0.45);
+  padding: clamp(0.85rem, 2.1vw, 1.35rem);
+  transform: perspective(1400px) rotateX(4deg);
+  transform-origin: center bottom;
+}
+
+.book__board {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+}
+
+.book__board--left {
+  left: 0;
+  border-radius: 4px 0 0 4px;
+  box-shadow: inset 8px 0 16px rgba(0, 0, 0, 0.25);
+}
+
+.book__board--right {
+  right: 0;
+  border-radius: 0 10px 10px 0;
+  box-shadow: inset -8px 0 16px rgba(0, 0, 0, 0.2);
+}
+
+.book__pages {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 14px 1fr;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  overflow: hidden;
+  perspective: 2200px;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+
+.book__pages:active {
+  cursor: grabbing;
+}
+
+.book__pages--flipping {
+  overflow: visible;
+  cursor: default;
+}
+
+.book__gutter {
+  position: relative;
+  z-index: 2;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.28) 0%,
+      var(--gutter) 45%,
+      var(--gutter) 55%,
+      rgba(0, 0, 0, 0.22) 100%
+    );
+  box-shadow:
+    inset 2px 0 4px rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(0, 0, 0, 0.35);
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 0;
+  background: var(--page);
+  overflow: hidden;
+}
+
+.page--left {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.06), transparent 18%),
+    linear-gradient(180deg, #f7f1e7 0%, var(--page) 40%, var(--page-edge) 100%);
+  box-shadow: inset -10px 0 18px rgba(0, 0, 0, 0.08);
+}
+
+.page--right {
+  background:
+    linear-gradient(270deg, rgba(0, 0, 0, 0.05), transparent 18%),
+    linear-gradient(180deg, #f7f1e7 0%, var(--page) 40%, var(--page-edge) 100%);
+  box-shadow: inset 10px 0 18px rgba(0, 0, 0, 0.07);
+}
+
+.page__sheet {
+  height: 100%;
+  padding: clamp(1rem, 2.4vw, 1.75rem);
+}
+
+.page__content {
+  height: 100%;
+  overflow: auto;
+  color: #2a2018;
+  font-family: "Literata", "Palatino Linotype", Palatino, serif;
+  font-size: clamp(0.85rem, 1.35vw, 1rem);
+  line-height: 1.55;
+  pointer-events: none;
+}
+
+.page__title {
+  margin: 0 0 0.75rem;
+  font-family: "Cormorant Garamond", "Times New Roman", serif;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #2a2018;
+}
+
+.page__content p {
+  margin: 0 0 0.85rem;
+  color: #3d3228;
+}
+
+.page__content:empty::before {
+  content: "";
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background:
+    repeating-linear-gradient(
+      transparent 0,
+      transparent 1.45em,
+      var(--ink-faint) 1.45em,
+      var(--ink-faint) calc(1.45em + 1px)
+    );
+  opacity: 0.55;
+  mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+}
+
+.page-curl {
+  position: absolute;
+  z-index: 4;
+  width: clamp(3.25rem, 7.5vw, 5rem);
+  height: clamp(3.25rem, 7.5vw, 5rem);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page-curl--next {
+  right: 0;
+  bottom: 0;
+}
+
+.page-curl--prev {
+  left: 0;
+  bottom: 0;
+}
+
+.page-curl__under,
+.page-curl__flap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.page-curl--next .page-curl__under {
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(225deg, #efe3cf 0%, #e0d0b5 55%, #d2c09f 100%);
+  box-shadow: inset 3px 3px 8px rgba(60, 40, 20, 0.12);
+}
+
+.page-curl--prev .page-curl__under {
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(135deg, #efe3cf 0%, #e0d0b5 55%, #d2c09f 100%);
+  box-shadow: inset -3px 3px 8px rgba(60, 40, 20, 0.12);
+}
+
+.page-curl--next .page-curl__flap {
+  clip-path: polygon(100% 30%, 100% 100%, 30% 100%);
+  background:
+    linear-gradient(
+      225deg,
+      #fff9f0 0%,
+      #f6ede0 26%,
+      #e8d7bc 52%,
+      #d2ba96 76%,
+      #b79a72 100%
+    );
+  box-shadow: -5px -5px 12px rgba(40, 24, 12, 0.16);
+  transform-origin: 100% 100%;
+  animation: curl-peek-next 3.4s ease-in-out infinite;
+}
+
+.page-curl--prev .page-curl__flap {
+  clip-path: polygon(0 30%, 70% 100%, 0 100%);
+  background:
+    linear-gradient(
+      135deg,
+      #fff9f0 0%,
+      #f6ede0 26%,
+      #e8d7bc 52%,
+      #d2ba96 76%,
+      #b79a72 100%
+    );
+  box-shadow: 5px -5px 12px rgba(40, 24, 12, 0.16);
+  transform-origin: 0 100%;
+  animation: curl-peek-prev 3.4s ease-in-out infinite;
+}
+
+.page-curl--next:hover .page-curl__flap,
+.page-curl--next:focus-visible .page-curl__flap,
+.page-curl--next:active .page-curl__flap {
+  animation: none;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  box-shadow: -8px -8px 18px rgba(40, 24, 12, 0.2);
+  transition: clip-path 380ms cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 380ms ease;
+}
+
+.page-curl--prev:hover .page-curl__flap,
+.page-curl--prev:focus-visible .page-curl__flap,
+.page-curl--prev:active .page-curl__flap {
+  animation: none;
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  box-shadow: 8px -8px 18px rgba(40, 24, 12, 0.2);
+  transition: clip-path 380ms cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 380ms ease;
+}
+
+.page-curl:focus-visible {
+  outline: none;
+}
+
+.page-curl:focus-visible .page-curl__flap {
+  outline: 2px solid rgba(120, 90, 55, 0.45);
+  outline-offset: 2px;
+}
+
+@keyframes curl-peek-next {
+  0%,
+  100% {
+    clip-path: polygon(100% 32%, 100% 100%, 32% 100%);
+  }
+  50% {
+    clip-path: polygon(100% 22%, 100% 100%, 22% 100%);
+  }
+}
+
+@keyframes curl-peek-prev {
+  0%,
+  100% {
+    clip-path: polygon(0 32%, 68% 100%, 0 100%);
+  }
+  50% {
+    clip-path: polygon(0 22%, 78% 100%, 0 100%);
+  }
+}
+
+.leaf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc((100% - 14px) / 2);
+  z-index: 6;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-ms) cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.leaf--forward {
+  left: calc(50% + 7px);
+  transform-origin: left center;
+  transform: rotateY(0deg);
+}
+
+.leaf--forward.leaf--turned {
+  transform: rotateY(-180deg);
+}
+
+.leaf--back {
+  left: 0;
+  transform-origin: right center;
+  transform: rotateY(0deg);
+}
+
+.leaf--back.leaf--turned {
+  transform: rotateY(180deg);
+}
+
+.leaf__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background:
+    linear-gradient(180deg, #f7f1e7 0%, var(--page) 40%, var(--page-edge) 100%);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 1px rgba(80, 55, 35, 0.08);
+}
+
+.leaf__face--front {
+  background:
+    linear-gradient(270deg, rgba(0, 0, 0, 0.05), transparent 18%),
+    linear-gradient(180deg, #f7f1e7 0%, var(--page) 40%, var(--page-edge) 100%);
+}
+
+.leaf--back .leaf__face--front {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.06), transparent 18%),
+    linear-gradient(180deg, #f7f1e7 0%, var(--page) 40%, var(--page-edge) 100%);
+}
+
+.leaf__face--back {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.08), transparent 22%),
+    linear-gradient(180deg, #f3ebe0 0%, var(--page) 42%, #e8dcc8 100%);
+}
+
+.leaf--back .leaf__face--back {
+  background:
+    linear-gradient(270deg, rgba(0, 0, 0, 0.06), transparent 22%),
+    linear-gradient(180deg, #f3ebe0 0%, var(--page) 42%, #e8dcc8 100%);
+}
+
+.leaf--forward.leaf--turned .leaf__face--front,
+.leaf--back.leaf--turned .leaf__face--front {
+  box-shadow: inset -18px 0 28px rgba(0, 0, 0, 0.18);
+}
+
+.hint {
+  margin: 0;
+  text-align: center;
+  font-family: "Cormorant Garamond", "Times New Roman", serif;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  letter-spacing: 0.04em;
+  color: rgba(232, 224, 210, 0.62);
+}
+
+@keyframes book-settle {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shadow-breathe {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@media (max-width: 720px) {
+  .book {
+    height: min(100% - 2.75rem, 100%);
+    width: auto;
+    max-width: min(420px, 92vw);
+    aspect-ratio: 10 / 14;
+  }
+
+  .book__cover {
+    transform: none;
+    border-radius: 6px;
+    padding: 0.75rem;
+  }
+
+  .book__pages {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 8px 1fr;
+    perspective: 1600px;
+  }
+
+  .book__gutter {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.28),
+      var(--gutter) 45%,
+      var(--gutter) 55%,
+      rgba(0, 0, 0, 0.22)
+    );
+  }
+
+  .page--left {
+    box-shadow: inset 0 -8px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  .page--right {
+    box-shadow: inset 0 8px 14px rgba(0, 0, 0, 0.07);
+  }
+
+  .page-curl {
+    width: 3.4rem;
+    height: 3.4rem;
+  }
+
+  .page-curl--prev {
+    top: 0;
+    bottom: auto;
+  }
+
+  .page-curl--prev .page-curl__under {
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    background:
+      linear-gradient(45deg, #efe3cf 0%, #e0d0b5 55%, #d2c09f 100%);
+    box-shadow: inset -3px -3px 8px rgba(60, 40, 20, 0.12);
+  }
+
+  .page-curl--prev .page-curl__flap {
+    clip-path: polygon(0 0, 70% 0, 0 70%);
+    box-shadow: 5px 5px 12px rgba(40, 24, 12, 0.16);
+    transform-origin: 0 0;
+    animation-name: curl-peek-prev-mobile;
+    background:
+      linear-gradient(
+        45deg,
+        #fff9f0 0%,
+        #f6ede0 26%,
+        #e8d7bc 52%,
+        #d2ba96 76%,
+        #b79a72 100%
+      );
+  }
+
+  .page-curl--prev:hover .page-curl__flap,
+  .page-curl--prev:focus-visible .page-curl__flap,
+  .page-curl--prev:active .page-curl__flap {
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    box-shadow: 8px 8px 18px rgba(40, 24, 12, 0.2);
+  }
+
+  @keyframes curl-peek-prev-mobile {
+    0%,
+    100% {
+      clip-path: polygon(0 0, 68% 0, 0 68%);
+    }
+    50% {
+      clip-path: polygon(0 0, 78% 0, 0 78%);
+    }
+  }
+
+  .leaf {
+    left: 0;
+    width: 100%;
+    height: calc((100% - 8px) / 2);
+  }
+
+  .leaf--forward {
+    top: calc(50% + 4px);
+    bottom: auto;
+    transform-origin: center top;
+    transform: rotateX(0deg);
+  }
+
+  .leaf--forward.leaf--turned {
+    transform: rotateX(-180deg);
+  }
+
+  .leaf--back {
+    top: 0;
+    bottom: auto;
+    transform-origin: center bottom;
+    transform: rotateX(0deg);
+  }
+
+  .leaf--back.leaf--turned {
+    transform: rotateX(180deg);
+  }
+
+  .leaf__face--back {
+    transform: rotateX(180deg);
+  }
+}

@@ -1,1 +1,17 @@
-/* You can add global styles to this file, and also import other style files */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: "Literata", "Palatino Linotype", Palatino, serif;
+  background: #1c2422;
+  color: #f2ebe0;
+}

@@ -1,0 +1,105 @@
+<section class="stage" aria-label="Открытая книга">
+  <div class="book" role="region" aria-label="Книга с перелистыванием страниц">
+    <div class="book__shadow"></div>
+
+    <div class="book__cover">
+      <div class="book__board book__board--left"></div>
+      <div class="book__board book__board--right"></div>
+
+      <div
+        class="book__pages"
+        [class.book__pages--flipping]="flipping"
+        (pointerdown)="onPointerDown($event)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerCancel()"
+      >
+        <article class="page page--left">
+          <div class="page__sheet">
+            <div class="page__content">
+              @if (baseLeft; as page) {
+                <p class="page__title">{{ page.title }}</p>
+                <p>{{ page.text }}</p>
+              }
+            </div>
+          </div>
+
+          @if (canGoBack && !flipping) {
+            <button
+              type="button"
+              class="page-curl page-curl--prev"
+              aria-label="Перелистнуть назад"
+              (pointerdown)="$event.stopPropagation()"
+              (pointerup)="$event.stopPropagation(); flipBack()"
+            >
+              <span class="page-curl__under" aria-hidden="true"></span>
+              <span class="page-curl__flap" aria-hidden="true"></span>
+            </button>
+          }
+        </article>
+
+        <div class="book__gutter" aria-hidden="true"></div>
+
+        <article class="page page--right">
+          <div class="page__sheet">
+            <div class="page__content">
+              @if (baseRight; as page) {
+                <p class="page__title">{{ page.title }}</p>
+                <p>{{ page.text }}</p>
+              }
+            </div>
+          </div>
+
+          @if (canGoForward && !flipping) {
+            <button
+              type="button"
+              class="page-curl page-curl--next"
+              aria-label="Перелистнуть вперёд"
+              (pointerdown)="$event.stopPropagation()"
+              (pointerup)="$event.stopPropagation(); flipForward()"
+            >
+              <span class="page-curl__under" aria-hidden="true"></span>
+              <span class="page-curl__flap" aria-hidden="true"></span>
+            </button>
+          }
+        </article>
+
+        @if (flipping) {
+          <div
+            class="leaf"
+            [class.leaf--forward]="flipDirection === 'forward'"
+            [class.leaf--back]="flipDirection === 'back'"
+            [class.leaf--turned]="leafTurned"
+            (transitionend)="onLeafTransitionEnd($event)"
+          >
+            <div class="leaf__face leaf__face--front">
+              <div class="page__sheet">
+                <div class="page__content">
+                  @if (leafFront; as page) {
+                    <p class="page__title">{{ page.title }}</p>
+                    <p>{{ page.text }}</p>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="leaf__face leaf__face--back">
+              <div class="page__sheet">
+                <div class="page__content">
+                  @if (leafBack; as page) {
+                    <p class="page__title">{{ page.title }}</p>
+                    <p>{{ page.text }}</p>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="hint" aria-hidden="true">
+    @if (canGoBack || canGoForward) {
+      Потяните за уголок страницы или проведите пальцем
+    }
+  </p>
+</section>
